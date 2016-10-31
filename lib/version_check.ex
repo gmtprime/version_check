@@ -4,6 +4,19 @@ defmodule VersionCheck do
   versions of applications in Hex. The messages are shown using `Logger` as a
   warning.
 
+  When starting an app using the function or the `VersionCheck` application you
+  should see something like:
+
+      % iex -S mix
+      Erlang/OTP 19 [erts-8.1] [source-4cc2ce3] [64-bit] [smp:8:8]
+      [async-threads:10] [hipe] [kernel-poll:false]
+
+      Interactive Elixir (1.3.2) - press Ctrl+C to exit (type h() ENTER for help)
+
+      17:30:42.454 [warn] A new yggdrasil version is available (2.0.8 > 2.0.7)
+      17:30:42.454 [debug] Using the latest version of :version_check (0.1.0)
+      iex(1)>
+
   ## Using VersionCheck
 
   When adding `use VersionCheck` to a module, the module adds the public

@@ -13,8 +13,8 @@ defmodule VersionCheckTest do
   end
 
   test "user_agent/1" do
-    user_agent = VC.user_agent(:version_check)
-    expected = 'VersionCheck/0.1.0 (Elixir/#{System.version}) (OTP/#{System.otp_release})'
+    user_agent = VC.user_agent(:version_check, "0.1.1")
+    expected = 'VersionCheck/0.1.1 (Elixir/#{System.version}) (OTP/#{System.otp_release})'
     assert user_agent == expected
   end
 end

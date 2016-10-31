@@ -66,26 +66,21 @@ defmodule VersionCheck do
 
       @doc false
       def check_version do
+        version = Mix.Project.config[:version]
         app_name = unquote(app_name)
-        VersionCheck.check_version(app_name)
+        VersionCheck.check_version(app_name, version)
       end
     end
   end
 
-  @version Mix.Project.config[:version]
   @default_url "https://hex.pm/api/packages/"
   @hex_url Application.get_env(:version_check, :hex_url, @default_url)
-
-  @doc false
-  def check_version(app_name) do
-    check_version(app_name, @version)
-  end
 
   @doc false
   # Checks version for an app.
   def check_version(app_name, current)
     when is_atom(app_name) and not is_nil(app_name) do
-    all_versions = fetch_all_hex_versions(app_name)
+    all_versions = fetch_all_hex_versions(app_name, current)
 
     case should_update?(all_versions, current) do
       :yes ->
@@ -107,10 +102,11 @@ defmodule VersionCheck do
 
   @doc false
   # Fetches all Hex versions.
-  def fetch_all_hex_versions(package_name) when is_atom(package_name) do
+  def fetch_all_hex_versions(package_name, current)
+      when is_atom(package_name) do
     package_name
     |> package_name_to_hex_url()
-    |> fetch(package_name)
+    |> fetch(package_name, current)
     |> hex_versions()
   end
 
@@ -124,10 +120,10 @@ defmodule VersionCheck do
 
   @doc false
   # Fetches the Hex versions from an URL.
-  def fetch(url, package_name) do
+  def fetch(url, package_name, current) do
     req = {
       String.to_charlist(url),
-      [{'User-Agent', user_agent(package_name)},
+      [{'User-Agent', user_agent(package_name, current)},
         {'Accept', 'application/vnd.hex+erlang'}
       ]
     }
@@ -138,14 +134,14 @@ defmodule VersionCheck do
 
   @doc false
   # User agent for the request.
-  def user_agent(package_name) do
+  def user_agent(package_name, version) do
     name =
       package_name
       |> Atom.to_string()
       |> String.split("_")
       |> Enum.map(&String.capitalize/1)
       |> List.to_string()
-    '#{name}/#{@version} (Elixir/#{System.version}) (OTP/#{System.otp_release})'
+    '#{name}/#{version} (Elixir/#{System.version}) (OTP/#{System.otp_release})'
   end
 
   @doc false
@@ -208,7 +204,8 @@ defmodule VersionCheck do
       for {app, _, version} <- Application.started_applications() do
         check_version(app, version)
       end
-      check_version(:version_check)
+      version = Mix.Project.config[:version]
+      check_version(:version_check, version)
     end
 
     children = [

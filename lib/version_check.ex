@@ -67,8 +67,7 @@ defmodule VersionCheck do
       @doc false
       def check_version do
         app_name = unquote(app_name)
-        version = VersionCheck.current_version()
-        VersionCheck.check_version(app_name, version)
+        VersionCheck.check_version(app_name)
       end
     end
   end

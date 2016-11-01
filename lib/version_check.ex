@@ -71,7 +71,9 @@ defmodule VersionCheck do
   @hex_url Application.get_env(:version_check, :hex_url, @default_url)
 
   @doc false
-  def get_version([], _), do: nil
+  def get_version([], _) do
+    Mix.Project.config[:version]
+  end
   def get_version([{app_name, _, version} | _], app_name)
       when is_list(version) do
     version |> List.to_string()
@@ -85,6 +87,7 @@ defmodule VersionCheck do
 
   @doc false
   # Checks version for an app.
+  def check_version(_, nil), do: :ok
   def check_version(app_name, current)
     when is_atom(app_name) and not is_nil(app_name) do
     all_versions = fetch_all_hex_versions(app_name, current)

@@ -71,17 +71,17 @@ defmodule VersionCheck do
   @hex_url Application.get_env(:version_check, :hex_url, @default_url)
 
   @doc false
-  def get_version([], _) do
-    Mix.Project.config[:version]
+  def get_version(nil), do: nil
+  def get_version(app_name) when is_atom(app_name) do
+    app_name |> Application.spec() |> get_version()
   end
-  def get_version([{app_name, _, version} | _], app_name)
-      when is_list(version) do
-    version |> List.to_string()
+  def get_version(spec) when is_list(spec) do
+    version = spec[:vsn]
+    if is_nil(version), do: nil, else: List.to_string(version)
   end
-  def get_version([_ | xs], app_name), do: get_version(xs, app_name)
 
   def check_version(app_name) do
-    version = :application.which_applications() |> get_version(app_name)
+    version = get_version(app_name)
     check_version(app_name, version)
   end
 

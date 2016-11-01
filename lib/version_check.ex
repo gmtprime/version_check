@@ -62,19 +62,26 @@ defmodule VersionCheck do
   defmacro __using__(options) do
     app_name = Keyword.get(options, :application)
     quote do
-      require Logger
-
       @doc false
-      def check_version do
-        version = Mix.Project.config[:version]
-        app_name = unquote(app_name)
-        VersionCheck.check_version(app_name, version)
-      end
+      def check_version, do: VersionCheck.check_version(unquote(app_name))
     end
   end
 
   @default_url "https://hex.pm/api/packages/"
   @hex_url Application.get_env(:version_check, :hex_url, @default_url)
+
+  @doc false
+  def get_version([], _), do: nil
+  def get_version([{app_name, _, version} | _], app_name)
+      when is_list(version) do
+    version |> List.to_string()
+  end
+  def get_version([_ | xs], app_name), do: get_version(xs, app_name)
+
+  def check_version(app_name) do
+    version = :application.which_applications() |> get_version(app_name)
+    check_version(app_name, version)
+  end
 
   @doc false
   # Checks version for an app.
@@ -204,8 +211,7 @@ defmodule VersionCheck do
       for {app, _, version} <- Application.started_applications() do
         check_version(app, version)
       end
-      version = Mix.Project.config[:version]
-      check_version(:version_check, version)
+      check_version(:version_check)
     end
 
     children = [
